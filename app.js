@@ -70,35 +70,45 @@ app.post("/players/", async (request, response) => {
          VALUES
           (
            '${playerName}',
-            ${jerseyNumber},
-            ${role}
+            '${jerseyNumber}',
+            '${role}'
           );`;
 
   const dbResponse = await db.run(postPlayersQuery);
-  const bookID = dbResponse.lastID;
+  const playerId = dbResponse.lastID;
+  console.log(playerId);
   response.send("Player Added to Team");
 });
 
 //PUT API 3
 app.get("/players/:playerId/", async (request, response) => {
-  const { playerID } = request.params;
-
+  const { playerId } = request.params;
+  console.log(playerId);
   const getPlayerQuery = `
         SELECT 
           *
         FROM 
           cricket_team 
         WHERE 
-          player_id = playerID;
+          player_id = ${playerId};
      `;
-  const playerDetails = await db.get(getPlayerQuery);
+  const playerDetailsSnakeCase = await db.get(getPlayerQuery);
 
-  response.send(playerDetails);
+  const convertSnakeCaseToCamelCase = (playerObject) => {
+    return {
+      playerId: playerObject.player_id,
+      playerName: playerObject.player_name,
+      jerseyNumber: playerObject.jersey_number,
+      role: playerObject.role,
+    };
+  };
+
+  response.send(convertSnakeCaseToCamelCase(playerDetailsSnakeCase));
 });
 
 //PUT API 4
-app.put("/players/:playerID/", async (request, response) => {
-  const { playerID } = request.params;
+app.put("/players/:playerId/", async (request, response) => {
+  const { playerId } = request.params;
   const playerDetails = request.body;
   const { playerName, jerseyNumber, role } = playerDetails;
   console.log(playerDetails);
@@ -110,7 +120,7 @@ app.put("/players/:playerID/", async (request, response) => {
             jersey_number = '${jerseyNumber}',
             role = '${role}'
         WHERE 
-            player_id = ${playerID};`;
+            player_id = ${playerId};`;
 
   await db.run(updatePlayerDetailsQuery);
   response.send("Player Details Updated");
