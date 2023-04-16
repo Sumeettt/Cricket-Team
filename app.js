@@ -80,7 +80,7 @@ app.post("/players/", async (request, response) => {
   response.send("Player Added to Team");
 });
 
-//PUT API 3
+//GET API 3
 app.get("/players/:playerId/", async (request, response) => {
   const { playerId } = request.params;
   console.log(playerId);
